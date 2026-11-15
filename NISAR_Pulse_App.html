@@ -3,762 +3,574 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NISAR-PULSE // Valrix-Atmos SAR Telemetry & Surface Change Engine</title>
+  <meta name="theme-color" content="#0b1210" />
+  <title>NISAR-PULSE | Local SAR Scenario Console</title>
   <style>
     :root {
-      --bg-void: #070b12;
-      --bg-panel: #0d1422;
-      --bg-card: #121c2e;
-      --border-glow: #1f3252;
-      --accent-cyan: #00f0ff;
-      --accent-amber: #ffb020;
-      --accent-crimson: #ff3b5c;
-      --accent-emerald: #10b981;
-      --text-main: #e2e8f0;
-      --text-dim: #8b9bb4;
-      --font-mono: 'Courier New', Courier, monospace;
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color-scheme: dark;
+      --ink: #0b1210;
+      --surface: #111a17;
+      --surface-raised: #18231e;
+      --line: #334139;
+      --line-soft: rgba(159, 181, 164, 0.16);
+      --text: #e7ede5;
+      --muted: #9eaaa0;
+      --mint: #8fe3b3;
+      --lime: #c9eb7c;
+      --amber: #ffbc70;
+      --aqua: #7edbd6;
+      --coral: #ff8872;
+      --mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      --display: "Bahnschrift", "Aptos Display", "Trebuchet MS", sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
     body {
-      background-color: var(--bg-void);
-      color: var(--text-main);
-      font-family: var(--font-sans);
+      margin: 0;
+      min-width: 320px;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      background-color: var(--ink);
+      background-image: linear-gradient(rgba(141, 171, 148, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(141, 171, 148, 0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      color: var(--text);
+      font-family: var(--display);
     }
 
-    header {
-      background: linear-gradient(90deg, #09101d 0%, #101d33 50%, #09101d 100%);
-      border-bottom: 1px solid var(--border-glow);
+    button, select, input { font: inherit; }
+    button, select, input[type="range"] { accent-color: var(--mint); }
+    button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 2px solid var(--lime);
+      outline-offset: 3px;
+    }
+
+    .topbar {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
       padding: 14px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(11, 18, 16, 0.94);
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .pulse-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--accent-cyan);
-      box-shadow: 0 0 12px var(--accent-cyan);
-      animation: pulse 1.8s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
-
-    .brand h1 {
-      font-size: 1.15rem;
-      letter-spacing: 1px;
-      font-family: var(--font-mono);
-      color: var(--accent-cyan);
-    }
-
-    .brand span {
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      display: block;
-    }
-
-    .badges {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .badge {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      padding: 4px 10px;
-      border-radius: 4px;
-      border: 1px solid var(--border-glow);
-      background: rgba(0, 240, 255, 0.06);
-      color: var(--accent-cyan);
-    }
-
-    .badge.isro {
-      border-color: rgba(255, 176, 32, 0.4);
-      background: rgba(255, 176, 32, 0.08);
-      color: var(--accent-amber);
-    }
-
-    .main-grid {
+    .identity { display: flex; align-items: center; gap: 13px; min-width: 0; }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
       display: grid;
-      grid-template-columns: 320px 1fr 340px;
-      gap: 16px;
-      padding: 16px;
-      flex: 1;
+      place-items: center;
+      border: 1px solid var(--mint);
+      color: var(--mint);
+      font: 700 12px var(--mono);
+      transform: rotate(45deg);
+      flex: 0 0 auto;
+    }
+    .brand-mark span { transform: rotate(-45deg); }
+    .identity h1 {
+      margin: 0;
+      font: 700 18px var(--display);
+      letter-spacing: 0;
+    }
+    .identity p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font: 10px var(--mono);
+    }
+    .top-status { display: flex; align-items: center; gap: 18px; color: var(--muted); font: 10px var(--mono); }
+    .top-status span { display: inline-flex; align-items: center; gap: 7px; }
+    .status-light { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 10px rgba(201, 235, 124, 0.55); }
+    .edition { color: var(--amber); }
+    .guide-link { color: var(--mint); font: 10px var(--mono); text-decoration-thickness: 1px; text-underline-offset: 3px; white-space: nowrap; }
+    .guide-link:hover { color: var(--lime); }
+
+    .console {
+      min-height: calc(100vh - 76px);
+      display: grid;
+      grid-template-columns: 254px minmax(360px, 1fr) 300px;
+      max-width: 1680px;
+      margin: 0 auto;
+      border-left: 1px solid var(--line-soft);
+      border-right: 1px solid var(--line-soft);
     }
 
-    @media (max-width: 1180px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .panel {
-      background: var(--bg-panel);
-      border: 1px solid var(--border-glow);
-      border-radius: 8px;
-      padding: 16px;
+    .rail { min-width: 0; padding: 20px 17px; background: rgba(17, 26, 23, 0.92); }
+    .inputs { border-right: 1px solid var(--line); }
+    .outputs { border-left: 1px solid var(--line); }
+    .section-heading {
       display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .panel-title {
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+      color: var(--mint);
+      font: 11px var(--mono);
       text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: var(--accent-cyan);
-      border-bottom: 1px solid var(--border-glow);
-      padding-bottom: 8px;
+    }
+    .section-index { color: var(--amber); }
+    .field { margin-bottom: 21px; }
+    .field-label, label {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-    }
-
-    label {
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      display: block;
-      margin-bottom: 6px;
-      font-family: var(--font-mono);
-    }
-
-    select, input[type="range"] {
-      width: 100%;
-      background: var(--bg-card);
-      color: var(--text-main);
-      border: 1px solid var(--border-glow);
-      border-radius: 5px;
-      padding: 8px 10px;
-      font-size: 0.85rem;
-      outline: none;
-    }
-
-    input[type="range"] {
-      padding: 0;
-      accent-color: var(--accent-cyan);
-      cursor: pointer;
-    }
-
-    .btn-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      justify-content: space-between;
       gap: 8px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font: 10px var(--mono);
+      text-transform: uppercase;
     }
+    .field-value { color: var(--text); font: 11px var(--mono); }
+    select {
+      width: 100%;
+      min-height: 40px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: var(--surface-raised);
+      color: var(--text);
+      font: 12px var(--display);
+    }
+    input[type="range"] { width: 100%; margin: 7px 0 0; cursor: pointer; }
+    .range-limits { display: flex; justify-content: space-between; margin-top: 6px; color: #74837a; font: 9px var(--mono); }
+    .input-note { margin: 7px 0 0; color: var(--muted); font: 10px/1.5 var(--mono); }
+    .link-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .link-controls button, .queue-button { min-height: 34px; border: 1px solid var(--line); border-radius: 2px; background: var(--surface-raised); color: var(--text); font: 9px var(--mono); text-transform: uppercase; cursor: pointer; }
+    .link-controls button:hover, .queue-button:hover { border-color: var(--mint); color: var(--mint); }
+    .link-controls button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .link-status { display: block; padding-top: 7px; color: var(--lime); font: 9px/1.4 var(--mono); }
+    .device-share { padding-top: 16px; margin-top: 14px; border-top: 1px solid var(--line-soft); }
+    .device-share h3 { margin: 0 0 7px; color: var(--mint); font: 10px var(--mono); text-transform: uppercase; }
+    .device-share p { margin: 0 0 9px; color: var(--muted); font: 9px/1.5 var(--mono); }
+    .queue-button { width: 100%; color: var(--mint); }
+    .device-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line-soft); font: 9px var(--mono); }
+    .device-row span:first-child { color: var(--muted); }
+    .device-row output { color: var(--text); text-align: right; }
+    .share-summary { display: flex; justify-content: space-between; gap: 8px; padding-top: 9px; color: var(--muted); font: 9px var(--mono); }
+    .sync-status { display: block; min-height: 30px; padding-top: 8px; color: var(--amber); font: 9px/1.5 var(--mono); }
+    .granule-import { padding-top: 15px; margin-top: 2px; border-top: 1px solid var(--line-soft); }
+    .granule-import h3 { margin: 0 0 7px; color: var(--mint); font: 10px var(--mono); text-transform: uppercase; }
+    .granule-help { margin: 0 0 12px; color: var(--muted); font: 9px/1.5 var(--mono); }
+    .file-field { padding: 10px 0; border-top: 1px solid var(--line-soft); }
+    .file-field label { margin-bottom: 7px; color: var(--text); }
+    .file-input { display: block; width: 100%; color: var(--muted); font: 9px var(--mono); }
+    .file-input::file-selector-button {
+      max-width: 100%;
+      margin: 0 7px 7px 0;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: var(--surface-raised);
+      color: var(--text);
+      font: 9px var(--mono);
+    }
+    .dataset-select { min-height: 34px; margin-top: 7px; font-size: 10px; }
+    .load-raster-button { width: 100%; min-height: 32px; margin-top: 7px; border: 1px solid var(--line); border-radius: 2px; background: transparent; color: var(--mint); font: 9px var(--mono); text-transform: uppercase; cursor: pointer; }
+    .load-raster-button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .file-status { display: block; min-height: 26px; padding-top: 6px; color: var(--muted); font: 9px/1.5 var(--mono); overflow-wrap: anywhere; }
 
-    button {
-      background: var(--bg-card);
-      color: var(--text-main);
-      border: 1px solid var(--border-glow);
-      padding: 8px 10px;
-      border-radius: 5px;
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
+    .scenario-readout {
+      padding-top: 15px;
+      margin-top: 3px;
+      border-top: 1px solid var(--line-soft);
+    }
+    .readout-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line-soft); font: 10px var(--mono); }
+    .readout-row span:first-child { color: var(--muted); }
+    .readout-row span:last-child { color: var(--text); text-align: right; }
+    .reset-button {
+      width: 100%;
+      min-height: 38px;
+      margin-top: 17px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: transparent;
+      color: var(--muted);
+      font: 10px var(--mono);
+      text-transform: uppercase;
       cursor: pointer;
-      transition: all 0.15s ease;
     }
+    .reset-button:hover { border-color: var(--mint); color: var(--mint); }
 
-    button:hover {
-      border-color: var(--accent-cyan);
-      background: rgba(0, 240, 255, 0.08);
-    }
-
-    button.active {
-      background: rgba(0, 240, 255, 0.18);
-      border-color: var(--accent-cyan);
-      color: var(--accent-cyan);
-      font-weight: bold;
-    }
-
-    .metric-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border-glow);
-      border-radius: 6px;
-      padding: 10px 12px;
-    }
-
-    .metric-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-      font-size: 0.8rem;
-    }
-
-    .metric-row:last-child { margin-bottom: 0; }
-    .metric-val {
-      font-family: var(--font-mono);
-      font-weight: bold;
-      color: var(--accent-cyan);
-    }
-
-    .canvas-wrapper {
+    .scene-column { display: flex; flex-direction: column; min-width: 0; padding: 20px 18px 14px; }
+    .scene-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
+    .scene-heading h2 { margin: 0; font: 600 16px var(--display); }
+    .scene-heading p { margin: 5px 0 0; color: var(--muted); font: 10px var(--mono); }
+    .fps-readout { padding: 5px 8px; border: 1px solid var(--line); color: var(--lime); font: 10px var(--mono); white-space: nowrap; }
+    .scene-comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+    .scene-card { position: relative; min-width: 0; padding: 10px; border: 1px solid #165366; background: rgba(8, 24, 36, 0.78); box-shadow: inset 0 0 12px rgba(0, 240, 255, 0.06); }
+    .scene-card::before, .scene-card::after { content: ""; position: absolute; z-index: 4; width: 10px; height: 10px; border: 2px solid #00d9eb; pointer-events: none; }
+    .scene-card::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+    .scene-card::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+    .scene-card-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 9px; }
+    .scene-card-heading h3 { margin: 0; color: var(--amber); font: 700 10px var(--mono); letter-spacing: 0; }
+    .scene-card-heading span { color: var(--muted); font: 8px var(--mono); text-align: right; }
+    .scene-shell {
       position: relative;
-      background: #05080f;
-      border: 1px solid var(--border-glow);
-      border-radius: 6px;
+      min-height: 270px;
+      height: min(40vh, 380px);
+      border: 1px solid #176078;
+      background: radial-gradient(ellipse at 50% 38%, #102c37 0%, #081923 68%, #06121a 100%);
+      box-shadow: inset 0 0 20px rgba(0, 208, 226, 0.08), 0 0 18px rgba(0, 208, 226, 0.08);
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
     }
-
-    canvas {
-      width: 100%;
-      height: 360px;
-      display: block;
-    }
-
-    .canvas-overlay {
+    .scene-shell::before, .scene-shell::after {
+      content: "";
       position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      display: flex;
-      justify-content: space-between;
+      z-index: 3;
+      width: 15px;
+      height: 15px;
+      border: 2px solid #00d9eb;
       pointer-events: none;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
     }
-
-    .tag-pill {
-      background: rgba(7, 11, 18, 0.85);
-      border: 1px solid var(--border-glow);
-      padding: 4px 8px;
-      border-radius: 4px;
+    .scene-shell::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+    .scene-shell::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+    #sceneCanvas { width: 100%; height: 100%; display: block; touch-action: none; }
+    .scene-label {
+      position: absolute;
+      top: 13px;
+      left: 13px;
+      padding: 7px 9px;
+      border: 1px solid rgba(0, 217, 235, 0.45);
+      border-left: 2px solid #00d9eb;
+      background: rgba(3, 15, 24, 0.88);
+      color: var(--text);
+      font: 9px/1.5 var(--mono);
+      pointer-events: none;
     }
-
-    .slider-bar {
-      background: var(--bg-card);
-      padding: 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border-glow);
+    .scene-label strong { display: block; color: #8be9fd; font-weight: 500; }
+    .scene-scale { position: absolute; z-index: 2; left: 50%; bottom: 12px; transform: translateX(-50%); padding: 5px 8px; border: 1px solid #176078; background: rgba(3, 15, 24, 0.9); color: #a6e3ff; font: 9px var(--mono); white-space: nowrap; pointer-events: none; }
+    .epoch-badge { position: absolute; z-index: 2; bottom: 12px; display: grid; gap: 3px; min-width: 102px; padding: 6px 8px; border: 1px solid #176078; background: rgba(3, 15, 24, 0.9); font: 8px/1.3 var(--mono); pointer-events: none; }
+    .epoch-badge span { color: #7aa3b5; }
+    .epoch-badge strong { color: #a6e3ff; font-weight: 500; }
+    .epoch-before { left: 12px; border-left: 2px solid #00d9eb; }
+    .epoch-after { right: 12px; border-right: 2px solid var(--amber); text-align: right; }
+    .scene-insight { display: grid; gap: 4px; padding: 9px 2px 1px; text-align: center; }
+    .scene-insight strong { color: #c2eeff; font: 600 9px var(--mono); }
+    .scene-insight span { color: var(--muted); font: 8px/1.45 var(--mono); }
+    .scene-legend { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; padding: 12px 0 10px; color: var(--muted); font: 9px var(--mono); }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-swatch { width: 8px; height: 8px; background: var(--mint); }
+    .legend-swatch.change { background: var(--amber); }
+    .legend-swatch.wipe { width: 2px; height: 13px; background: var(--coral); }
+    .mode-switch { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); }
+    .mode-switch button {
+      border: 0;
+      border-radius: 2px;
+      padding: 7px 9px;
+      background: transparent;
+      color: var(--muted);
+      font: 9px var(--mono);
+      cursor: pointer;
     }
+    .mode-switch button[aria-pressed="true"] { background: #314238; color: var(--text); }
+    .plain-language-note {
+      padding: 12px 14px;
+      border: 1px solid #176078;
+      border-left: 3px solid #00d9eb;
+      background: linear-gradient(100deg, rgba(7, 28, 41, 0.96), rgba(10, 22, 32, 0.88));
+      color: #c8dce2;
+      font: 12px/1.65 var(--display);
+    }
+    .plain-language-note strong { display: block; margin-bottom: 3px; color: #8be9fd; font: 600 11px var(--mono); text-transform: uppercase; }
+    #sceneCanvas.scene-shift { animation: sceneShift 620ms ease-out; }
+    @keyframes sceneShift {
+      0% { opacity: 0.5; filter: brightness(0.55) saturate(0.55); }
+      45% { opacity: 1; filter: brightness(1.35) saturate(1.25); }
+      100% { opacity: 1; filter: none; }
+    }
+    .scene-guide {
+      position: absolute;
+      top: 13px;
+      right: 13px;
+      max-width: 190px;
+      padding: 7px 9px;
+      border: 1px solid rgba(245, 166, 35, 0.45);
+      border-right: 2px solid var(--amber);
+      background: rgba(3, 15, 24, 0.88);
+      color: #a6c5d0;
+      font: 9px/1.5 var(--mono);
+      text-align: right;
+      pointer-events: none;
+    }
+    .scene-guide strong { display: block; color: #ffcf70; font-weight: 500; }
+    .scene-tools { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .mode-note { color: var(--muted); font: 9px/1.5 var(--mono); text-align: right; }
 
-    .slider-header {
+    .simulation-banner {
       display: flex;
       justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      margin-bottom: 6px;
+      gap: 8px;
+      padding: 9px 10px;
+      margin-bottom: 17px;
+      border-left: 2px solid var(--amber);
+      background: rgba(255, 188, 112, 0.08);
+      color: #ffd1a0;
+      font: 9px var(--mono);
+      text-transform: uppercase;
     }
-
-    .status-banner {
-      padding: 10px 12px;
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      font-weight: bold;
-      text-align: center;
-      border: 1px solid;
+    .alert-banner { padding: 9px 10px; margin: -7px 0 12px; border-left: 2px solid; font: 9px var(--mono); text-transform: uppercase; }
+    .alert-low { border-color: var(--mint); background: rgba(143, 227, 179, 0.08); color: var(--mint); }
+    .alert-watch { border-color: var(--amber); background: rgba(255, 188, 112, 0.08); color: #ffd1a0; }
+    .alert-high { border-color: var(--coral); background: rgba(255, 136, 114, 0.1); color: #ffad9e; }
+    .metric-list { margin: 0; }
+    .metric {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: baseline;
+      gap: 8px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line-soft);
     }
-
-    .status-nominal {
-      background: rgba(16, 185, 129, 0.12);
-      border-color: var(--accent-emerald);
-      color: var(--accent-emerald);
-    }
-
-    .status-warning {
-      background: rgba(255, 176, 32, 0.12);
-      border-color: var(--accent-amber);
-      color: var(--accent-amber);
-    }
-
-    .status-critical {
-      background: rgba(255, 59, 92, 0.15);
-      border-color: var(--accent-crimson);
-      color: var(--accent-crimson);
-    }
-
-    .terminal-log {
-      background: #04070d;
-      border: 1px solid var(--border-glow);
-      border-radius: 6px;
-      padding: 10px;
-      font-family: var(--font-mono);
-      font-size: 0.73rem;
-      line-height: 1.45;
-      height: 195px;
-      overflow-y: auto;
-      color: #a3b8d9;
-    }
-
-    .log-ok { color: var(--accent-emerald); }
-    .log-warn { color: var(--accent-amber); }
-    .log-crit { color: var(--accent-crimson); }
-
-    table {
+    .metric dt { color: var(--muted); font: 10px var(--mono); }
+    .metric dd { margin: 0; color: var(--text); font: 17px var(--mono); text-align: right; }
+    .metric dd small { color: var(--muted); font-size: 9px; }
+    .metric.primary dd { color: var(--amber); font-size: 22px; }
+    .metric.accent dd { color: var(--aqua); }
+    .phase-box { margin-top: 15px; padding: 11px 0; border-bottom: 1px solid var(--line-soft); border-top: 1px solid var(--line-soft); }
+    .phase-box h3, .packet-title { margin: 0 0 9px; color: var(--mint); font: 10px var(--mono); text-transform: uppercase; }
+    .phase-equation { margin: 0 0 8px; color: var(--text); font: 11px var(--mono); }
+    .phase-detail { margin: 0; color: var(--muted); font: 9px/1.6 var(--mono); }
+    .theta-state { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-top: 11px; color: var(--muted); font: 9px var(--mono); }
+    .theta-state strong { color: var(--lime); font-weight: 500; text-align: right; }
+    .packet { padding-top: 16px; }
+    .packet-row { display: grid; grid-template-columns: 25px 1fr auto; gap: 7px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line-soft); font: 9px var(--mono); }
+    .packet-row b { color: var(--amber); font-weight: 500; }
+    .packet-row span { color: var(--muted); }
+    .packet-row output { max-width: 130px; overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+    .export-button {
       width: 100%;
-      border-collapse: collapse;
-      font-size: 0.75rem;
-      font-family: var(--font-mono);
+      min-height: 42px;
+      margin-top: 16px;
+      border: 1px solid var(--mint);
+      border-radius: 3px;
+      background: var(--mint);
+      color: #102019;
+      font: 700 10px var(--mono);
+      text-transform: uppercase;
+      cursor: pointer;
     }
+    .export-button:hover { background: var(--lime); border-color: var(--lime); }
+    .export-note { min-height: 25px; margin: 8px 0 0; color: var(--muted); font: 9px/1.5 var(--mono); }
 
-    th, td {
-      border-bottom: 1px solid var(--border-glow);
-      padding: 6px 4px;
-      text-align: left;
+    .bottomline {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 24px;
+      border-top: 1px solid var(--line);
+      color: #87958a;
+      font: 9px var(--mono);
     }
+    #eventLog { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
 
-    th { color: var(--text-dim); }
+    @media (max-width: 1120px) {
+      .console { grid-template-columns: 230px minmax(0, 1fr); }
+      .outputs { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; border-left: 0; border-top: 1px solid var(--line); }
+      .outputs > .section-heading, .outputs > .simulation-banner, .outputs > .export-button, .outputs > .export-note { grid-column: 1 / -1; }
+      .metric-list { align-self: start; }
+      .phase-box, .packet { align-self: start; }
+    }
+    @media (max-width: 760px) {
+      .topbar { align-items: flex-start; padding: 13px 15px; }
+      .top-status { flex-direction: column; align-items: flex-end; gap: 6px; font-size: 9px; }
+      .identity h1 { font-size: 15px; }
+      .identity p { max-width: 220px; font-size: 9px; line-height: 1.5; }
+      .console { display: flex; flex-direction: column; border: 0; }
+      .scene-column { order: 0; padding: 17px 14px; }
+      .inputs { order: 1; border-right: 0; border-top: 1px solid var(--line); }
+      .outputs { order: 2; display: block; border-top: 1px solid var(--line); }
+      .scene-shell { height: min(38vh, 330px); min-height: 250px; max-height: 380px; }
+      .scene-tools { align-items: flex-start; flex-direction: column; }
+      .mode-note { text-align: left; }
+      .bottomline { padding: 10px 14px; flex-direction: column; gap: 6px; }
+      #eventLog { text-align: left; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; }
+      #sceneCanvas.scene-shift { animation: none; }
+    }
   </style>
 </head>
 <body>
-
-<header>
-  <div class="brand">
-    <div class="pulse-dot"></div>
-    <div>
-      <h1>NISAR-PULSE // VALRIX-ATMOS SAR ENGINE</h1>
-      <span>NASA-ISRO L-Band & S-Band Synthetic Aperture Radar Surface Deformation & Backscatter Analyzer</span>
-    </div>
-  </div>
-  <div class="badges">
-    <span class="badge isro">NASA-ISRO NISAR L/S-BAND</span>
-    <span class="badge">ATMOS-GOD WAVE INVERSION</span>
-    <span class="badge">VALRIX DUAL-BLOCK VERIFIED</span>
-  </div>
-</header>
-
-<div class="main-grid">
-  <!-- LEFT PANEL: MISSION & RADAR CONTROLS -->
-  <div class="panel">
-    <div class="panel-title">
-      <span>01 // SAR Target & Band Config</span>
-      <span>[READY]</span>
-    </div>
-
-    <div>
-      <label for="siteSelect">SELECT NASA-ISRO AOI (AREA OF INTEREST)</label>
-      <select id="siteSelect">
-        <option value="sundarbans">Sundarbans Delta (Wetland & Mangrove Loss)</option>
-        <option value="joshimath">Joshimath Himalayan Slope (Land Subsidence)</option>
-        <option value="gangotri">Gangotri Glacier Terminus (Ice Velocity & Retreat)</option>
-        <option value="california">Sierra Nevada Forest (Post-Wildfire Burn Scar)</option>
-      </select>
-    </div>
-
-    <div>
-      <label>RADAR FREQUENCY & POLARIZATION</label>
-      <div class="btn-group">
-        <button id="btnLBand" class="active" onclick="setBand('L-Band (1.25 GHz)')">L-BAND (24 cm)</button>
-        <button id="btnSBand" onclick="setBand('S-Band (3.20 GHz)')">S-BAND (9.3 cm)</button>
+  <header class="topbar">
+    <div class="identity">
+      <div class="brand-mark" aria-hidden="true"><span>NP</span></div>
+      <div>
+        <h1>NISAR-PULSE <span style="color: var(--amber);">/</span> SCENARIO CONSOLE</h1>
+        <p>EARTH OBSERVATION SIMULATION / LOCAL SESSION</p>
       </div>
     </div>
+    <div class="top-status" aria-label="Connection and data status">
+      <a class="guide-link" href="./DEMO_GUIDE.md" target="_blank" rel="noopener">OPEN 5-FEATURE GUIDE ↗</a>
+      <span><i class="status-light" aria-hidden="true"></i>LOCAL ONLY</span>
+      <span class="edition">SYNTHETIC DATASET / 2026</span>
+    </div>
+  </header>
 
-    <div>
-      <label>VISUALIZATION LAYER MODE</label>
-      <div class="btn-group">
-        <button id="btnViewSplit" class="active" onclick="setViewMode('split')">BEFORE / AFTER WIPE</button>
-        <button id="btnViewIfg" onclick="setViewMode('interferogram')">InSAR PHASE FRINGES</button>
+  <main class="console">
+    <section class="rail inputs" aria-labelledby="inputsTitle">
+      <h2 class="section-heading" id="inputsTitle"><span><b class="section-index">01</b> / Inputs</span><span>DEMO</span></h2>
+
+      <div class="field">
+        <label for="siteSelect">Area of interest</label>
+        <select id="siteSelect">
+          <option value="sundarbans">Sundarbans Delta</option>
+          <option value="joshimath">Joshimath Himalayas</option>
+          <option value="gangotri">Gangotri Glacier</option>
+          <option value="california">Sierra Nevada Burn Scar</option>
+        </select>
       </div>
-    </div>
 
-    <div class="metric-box">
-      <div class="metric-row">
-        <span>Dataset Source:</span>
-        <span class="metric-val" id="metaSource">NISAR_L1_RSLC_2026</span>
+      <div class="field">
+        <label for="wipeSlider"><span>Epoch comparison</span><output id="epochLabel" class="field-value">50%</output></label>
+        <input type="range" id="wipeSlider" min="0" max="100" value="50" />
+        <div class="range-limits"><span>T0 BASELINE</span><span>T1 SCENARIO</span></div>
       </div>
-      <div class="metric-row">
-        <span>Coordinates:</span>
-        <span class="metric-val" id="metaCoords">21.9497° N, 89.1833° E</span>
+
+      <div class="field">
+        <label for="stressSlider"><span>Scenario intensity</span><output id="stressLabel" class="field-value">68%</output></label>
+        <input type="range" id="stressSlider" min="10" max="100" value="68" />
+        <p class="input-note">Scales the synthetic change field and illustrative metrics.</p>
       </div>
-      <div class="metric-row">
-        <span>Polarization:</span>
-        <span class="metric-val" id="metaPol">HH + HV (Dual-Pol)</span>
+
+      <div class="field">
+        <label>Offline link simulation</label>
+        <div class="link-controls">
+          <button type="button" id="offlineButton">Simulate link drop</button>
+          <button type="button" id="reconnectButton" disabled>Simulate reconnect</button>
+        </div>
+        <output class="link-status" id="networkStatus" aria-live="polite">LINK UP / SIMULATION ONLY</output>
+        <p class="input-note">Toggles a local demo queue; no real satellite, P2P, or cloud connection.</p>
       </div>
-      <div class="metric-row">
-        <span>Cloud Penetration:</span>
-        <span class="metric-val" style="color: var(--accent-emerald);">100% ALL-WEATHER</span>
+
+      <div class="granule-import">
+        <h3>Local NISAR HDF5 layers</h3>
+        <p class="granule-help">Choose a real-valued 2D dataset. Files stay in this browser; complex SLC data is not supported.</p>
+        <div class="file-field">
+          <label for="t0File">T0 / before granule</label>
+          <input class="file-input" id="t0File" type="file" accept=".h5,.hdf5,.hdf,application/x-hdf5" />
+          <select class="dataset-select" id="t0Dataset" aria-label="T0 HDF5 raster dataset" disabled><option>Select a granule first</option></select>
+          <button class="load-raster-button" id="t0Load" type="button" disabled>Show T0 base layer</button>
+          <output class="file-status" id="t0Status" aria-live="polite">No T0 raster loaded</output>
+        </div>
+        <div class="file-field">
+          <label for="t1File">T1 / after granule (optional)</label>
+          <input class="file-input" id="t1File" type="file" accept=".h5,.hdf5,.hdf,application/x-hdf5" />
+          <select class="dataset-select" id="t1Dataset" aria-label="T1 HDF5 raster dataset" disabled><option>Select a granule first</option></select>
+          <button class="load-raster-button" id="t1Load" type="button" disabled>Show T1 layer</button>
+          <output class="file-status" id="t1Status" aria-live="polite">No T1 raster loaded</output>
+        </div>
       </div>
-    </div>
 
-    <div class="metric-box">
-      <label>ATMOS-GOD WAVE INVERSION EQUATION</label>
-      <div style="font-family: var(--font-mono); font-size: 0.74rem; color: #cbd5e1; line-height: 1.5;">
-        Δφ = (4π / λ) · ΔR_los + φ_atm<br/>
-        σ⁰(dB) = 10 · log10(⟨|S_hv|²⟩ / A_cell)<br/>
-        <span style="color: var(--accent-amber);">Zero-Optical Mode: Active (Cloud/Smoke Immune)</span>
+      <div class="scenario-readout" aria-live="polite">
+        <div class="readout-row"><span>SCENARIO ID</span><span id="metaSource">DEMO_SUNDARBANS</span></div>
+        <div class="readout-row"><span>COORDINATES</span><span id="metaCoords">21.9497 N, 89.1833 E</span></div>
+        <div class="readout-row"><span>POLARIZATION PROFILE</span><span id="metaPol">HH + HV (SIM)</span></div>
+        <div class="readout-row"><span>WAVELENGTH λ</span><span id="wavelengthValue">0.240 m</span></div>
       </div>
-    </div>
-  </div>
+      <button class="reset-button" id="resetButton" type="button">Reset demo inputs</button>
+    </section>
 
-  <!-- CENTER PANEL: LIVE INTERACTIVE SAR VISUALIZER & SIMULATION -->
-  <div class="panel">
-    <div class="panel-title">
-      <span>02 // Real-Time SAR Backscatter & InSAR Phase Simulation</span>
-      <span id="fpsCounter">60 FPS // 0ms LATENCY</span>
-    </div>
-
-    <div class="canvas-wrapper">
-      <div class="canvas-overlay">
-        <span class="tag-pill" id="leftTag">T0 BASELINE: JAN 2025</span>
-        <span class="tag-pill" id="rightTag">T1 OBSERVATION: NOV 2026</span>
+    <section class="scene-column" aria-labelledby="sceneTitle">
+      <div class="scene-heading">
+        <div>
+          <h2 id="sceneTitle">Synthetic terrain / epoch comparison</h2>
+          <p>Procedural height field · not georeferenced imagery</p>
+        </div>
+        <output class="fps-readout" id="renderFps" aria-label="Measured renderer frame rate">FPS --</output>
       </div>
-      <canvas id="sarCanvas" width="760" height="360"></canvas>
-    </div>
-
-    <div class="slider-bar">
-      <div class="slider-header">
-        <span>TEMPORAL EPOCH / WIPE COMPARISON</span>
-        <span id="epochLabel" style="color: var(--accent-cyan);">WIPE: 50% | ΔT = 18 MONTHS</span>
+      <div class="scene-comparison-grid">
+        <article class="scene-card" aria-label="T0 baseline terrain comparison">
+          <div class="scene-card-heading"><h3>T0 / BASELINE</h3><span>REFERENCE INPUT</span></div>
+          <div class="scene-shell">
+            <canvas id="sceneCanvas" aria-label="Interactive 3D baseline terrain scene"></canvas>
+            <div class="scene-label"><strong id="sceneName">SUNDERBANS DELTA</strong><span id="sceneModeLabel">RAW-STYLE INTENSITY / SIM</span></div>
+            <div class="scene-guide"><strong id="guideTitle">RAW-STYLE PIXEL FIELD</strong><span id="guideText">Synthetic intensity texture; not a NASA source image.</span></div>
+            <div class="epoch-badge epoch-before"><span>BASELINE INPUT</span><strong>T0 / BEFORE</strong></div>
+            <div class="scene-scale" id="sceneStatus" role="status">WEBGL INITIALIZING</div>
+          </div>
+          <div class="scene-insight"><strong>BASELINE SURFACE</strong><span>Local T0 raster when loaded; otherwise synthetic terrain.</span></div>
+        </article>
+        <article class="scene-card" aria-label="T1 scenario terrain comparison">
+          <div class="scene-card-heading"><h3>T1 / SCENARIO</h3><span>SIMULATED OUTPUT</span></div>
+          <div class="scene-shell">
+            <canvas id="sceneCanvasAfter" aria-label="Interactive 3D scenario terrain scene"></canvas>
+            <div class="scene-label"><strong id="sceneNameAfter">SUNDERBANS DELTA</strong><span id="sceneModeLabelAfter">RAW-STYLE INTENSITY / SIM</span></div>
+            <div class="scene-guide"><strong id="guideTitleAfter">T1 SCENARIO / SIM</strong><span id="guideTextAfter">Synthetic change field; not a measured result.</span></div>
+            <div class="epoch-badge epoch-after"><span>SCENARIO OUTPUT</span><strong>T1 / SIMULATED</strong></div>
+            <div class="scene-scale" id="sceneStatusAfter" role="status">WEBGL INITIALIZING</div>
+          </div>
+          <div class="scene-insight"><strong>SCENARIO SURFACE</strong><span>Selected AOI and intensity; local T1 raster when loaded.</span></div>
+        </article>
       </div>
-      <input type="range" id="wipeSlider" min="0" max="100" value="50" />
-    </div>
-
-    <div class="slider-bar">
-      <div class="slider-header">
-        <span>SIMULATE ENVIRONMENTAL STRESS / DISPLACEMENT INTENSITY</span>
-        <span id="stressLabel" style="color: var(--accent-amber);">SEVERITY: 68%</span>
+      <div class="scene-legend">
+        <span class="legend-item"><i class="legend-swatch" aria-hidden="true"></i><span id="t0LegendLabel">T0 BASELINE</span></span>
+        <span class="legend-item"><i class="legend-swatch change" aria-hidden="true"></i><span id="t1LegendLabel">T1 SYNTHETIC CHANGE</span></span>
+        <span class="legend-item"><i class="legend-swatch wipe" aria-hidden="true"></i>EPOCH DIVIDER</span>
       </div>
-      <input type="range" id="stressSlider" min="10" max="100" value="68" />
-    </div>
-  </div>
+      <div class="scene-tools">
+        <div class="mode-switch" role="group" aria-label="Synthetic scene display mode">
+          <button type="button" id="rawMode" aria-pressed="true">RAW-STYLE</button>
+          <button type="button" id="explainedMode" aria-pressed="false">EXPLAIN 3D</button>
+          <button type="button" id="mapMode" aria-pressed="false">MAP / EXPLAIN</button>
+          <button type="button" id="phaseMode" aria-pressed="false">PHASE / SIM</button>
+        </div>
+        <p class="mode-note" id="modeNote">Drag to orbit · raw-style intensity is synthetic.</p>
+      </div>
+      <aside class="plain-language-note" aria-live="polite">
+        <strong>How to read this view</strong>
+        <span id="plainExplanation">T0 is the starting view. T1 shows the simulated scenario. Move the epoch slider to compare them; the divider follows it.</span>
+      </aside>
+    </section>
 
-  <!-- RIGHT PANEL: VALRIX ANOMALY AUDITOR & NASA TELEMETRY LOGS -->
-  <div class="panel">
-    <div class="panel-title">
-      <span>03 // Valrix State & Risk Auditor</span>
-      <span>[LOCKED]</span>
-    </div>
+    <section class="rail outputs" aria-labelledby="outputsTitle">
+      <h2 class="section-heading" id="outputsTitle"><span><b class="section-index">02</b> / Outputs</span><span id="outputState">SIM</span></h2>
+      <div class="simulation-banner"><span>Metrics: synthetic demo</span><span id="granuleModeStatus">NO GRANULES</span></div>
+      <div class="alert-banner alert-watch" id="riskBanner" role="status" aria-live="polite">DEMO SCORE / CALCULATING</div>
 
-    <div id="statusBanner" class="status-banner status-warning">
-      ALERT: ELEVATED SURFACE DEFORMATION DETECTED
-    </div>
+      <dl class="metric-list" aria-live="polite">
+        <div class="metric"><dt>Backscatter change Δσ⁰</dt><dd id="deltaSigma">-- <small>dB</small></dd></div>
+        <div class="metric primary"><dt>LOS displacement ΔR</dt><dd id="losValue">-- <small>cm</small></dd></div>
+        <div class="metric accent"><dt>Coherence proxy γ</dt><dd id="coherenceValue">--</dd></div>
+        <div class="metric"><dt>Area scale</dt><dd id="areaValue">-- <small>km²</small></dd></div>
+      </dl>
 
-    <div class="metric-box">
-      <table>
-        <thead>
-          <tr>
-            <th>PARAMETER</th>
-            <th>T0 BASE</th>
-            <th>T1 CURR</th>
-            <th>DELTA</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Backscatter σ⁰</td>
-            <td id="t0Sigma">-11.4 dB</td>
-            <td id="t1Sigma">-18.9 dB</td>
-            <td id="deltaSigma" style="color: var(--accent-crimson);">-7.5 dB</td>
-          </tr>
-          <tr>
-            <td>LOS Shift (ΔR)</td>
-            <td>0.0 cm</td>
-            <td id="t1Disp">-14.2 cm</td>
-            <td id="deltaDisp" style="color: var(--accent-amber);">HIGH</td>
-          </tr>
-          <tr>
-            <td>Coherence (γ)</td>
-            <td>0.94</td>
-            <td id="t1Coh">0.41</td>
-            <td id="deltaCoh" style="color: var(--accent-crimson);">-0.53</td>
-          </tr>
-          <tr>
-            <td>Affected Area</td>
-            <td>0.0 km²</td>
-            <td id="t1Area">42.8 km²</td>
-            <td style="color: var(--accent-cyan);">VERIFIED</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="phase-box">
+        <h3>Scalar phase demonstration</h3>
+        <p class="phase-equation">ΔR = λ Δφ / 4π</p>
+        <p class="phase-detail">SYNTHETIC Δφ <strong id="phaseValue">-- rad</strong><br />IONOSPHERE TERM <strong>0.000 rad / assumed</strong><br />NOT AN UNWRAPPED PHASE PRODUCT</p>
+        <div class="theta-state"><span>Θ heuristic / threshold 0.82</span><strong id="thetaValue">--</strong></div>
+      </div>
+      <p class="input-note">Granule previews use an independent display stretch. Metrics above are not computed from uploaded imagery.</p>
 
-    <div>
-      <label>VALRIX DUAL-BLOCK INTEGRITY & KERNEL LOGS</label>
-      <div class="terminal-log" id="terminalLog"></div>
-    </div>
+      <div class="packet">
+        <h3 class="packet-title">A1 / B1 / C1 local demo packet</h3>
+        <div class="packet-row"><b>A1</b><span>SURFACE / AOI</span><output id="packetA1">--</output></div>
+        <div class="packet-row"><b>B1</b><span>BACKSCATTER Δ</span><output id="packetB1">--</output></div>
+        <div class="packet-row"><b>C1</b><span>PHASE / Θ</span><output id="packetC1">--</output></div>
+      </div>
 
-    <button onclick="exportReport()" style="width: 100%; border-color: var(--accent-emerald); color: var(--accent-emerald);">
-      EXPORT VERIFIED NISAR TELEMETRY JSON
-    </button>
-  </div>
-</div>
+      <div class="device-share">
+        <h3>Simulated edge packet delivery</h3>
+        <p>Virtual devices accept the compact packet only when it fits their demo capacity.</p>
+        <button class="queue-button" id="queuePacketButton" type="button">Build A1 / B1 / C1 packet</button>
+        <div class="device-row"><span>FIELD TABLET / 2 KB</span><output id="deviceTablet">IDLE</output></div>
+        <div class="device-row"><span>EDGE RELAY / 768 B</span><output id="deviceRelay">IDLE</output></div>
+        <div class="device-row"><span>LOW-POWER NODE / 256 B</span><output id="deviceSensor">IDLE</output></div>
+        <div class="share-summary"><span>PACKET <output id="packetBytes">--</output></span><span>QUEUE <output id="queueCount">0</output></span></div>
+        <output class="sync-status" id="syncStatus" aria-live="polite">Local packet preview only; not transmitted.</output>
+      </div>
 
-<script>
-  // Embedded Real NASA-ISRO NISAR / Sentinel-1 Reference Profiles (Zero External API Dependency)
-  const AOI_DATA = {
-    sundarbans: {
-      name: "Sundarbans Delta (Mangrove & Wetland Loss)",
-      source: "NISAR_L2_GCOV_SUNDARBANS_2026",
-      coords: "21.9497° N, 89.1833° E",
-      pol: "HH + HV (Volume Scattering)",
-      baseSigma: -11.4,
-      baseDisp: 2.1,
-      baseArea: 42.8,
-      colorShift: [18, 185, 129],
-      anomalyColor: [0, 140, 255],
-      description: "Double-bounce mangrove radar return drops sharply to specular water reflection due to coastal erosion."
-    },
-    joshimath: {
-      name: "Joshimath Himalayan Slope (Land Subsidence)",
-      source: "NISAR_L1_RIFG_HIMALAYA_2026",
-      coords: "30.5506° N, 79.5660° E",
-      pol: "VV + VH (DInSAR Phase)",
-      baseSigma: -8.2,
-      baseDisp: 16.8,
-      baseArea: 11.4,
-      colorShift: [160, 140, 110],
-      anomalyColor: [255, 59, 92],
-      description: "Line-of-Sight (LOS) downward ground subsidence detected via L-band interferometric phase unwrapping."
-    },
-    gangotri: {
-      name: "Gangotri Glacier Terminus (Ice Velocity & Retreat)",
-      source: "NISAR_L2_GOFF_CRYOSPHERE_2026",
-      coords: "30.9250° N, 79.0800° E",
-      pol: "HH + HV (Pixel Offset Tracking)",
-      baseSigma: -6.5,
-      baseDisp: 28.4,
-      baseArea: 19.6,
-      colorShift: [180, 230, 255],
-      anomalyColor: [255, 176, 32],
-      description: "Sub-surface L-band penetration tracks basal ice shear and terminus calving retreat through dense cloud cover."
-    },
-    california: {
-      name: "Sierra Nevada Forest (Post-Wildfire Burn Scar)",
-      source: "NISAR_L2_GCOV_BIOMASS_2026",
-      coords: "37.8651° N, 119.5383° W",
-      pol: "HV Cross-Pol (Canopy Structure)",
-      baseSigma: -10.1,
-      baseDisp: 0.8,
-      baseArea: 64.2,
-      colorShift: [34, 197, 94],
-      anomalyColor: [255, 90, 31],
-      description: "Loss of canopy volume scattering (HV backscatter drop) maps burn severity beneath thick wildfire smoke."
-    }
-  };
+      <button class="export-button" id="exportButton" type="button">Export demo JSON</button>
+      <p class="export-note" id="exportNote" aria-live="polite">SHA-256 checksum when browser crypto is available; not a signature.</p>
+    </section>
+  </main>
 
-  let currentAOI = "sundarbans";
-  let currentBand = "L-Band (1.25 GHz)";
-  let viewMode = "split";
-  let wipePos = 50;
-  let stressVal = 68;
-  let animPhase = 0;
+  <footer class="bottomline"><span>LOCAL SIMULATION · NO P2P OR CLOUD SYNC</span><span id="eventLog" aria-live="polite">Demo initialized with synthetic scenario values.</span></footer>
 
-  const canvas = document.getElementById("sarCanvas");
-  const ctx = canvas.getContext("2d");
-
-  // Deterministic pseudo-random terrain grid for 60FPS zero-lag rendering
-  const GRID_W = 95;
-  const GRID_H = 45;
-  const terrainNoise = [];
-  for (let y = 0; y < GRID_H; y++) {
-    const row = [];
-    for (let x = 0; x < GRID_W; x++) {
-      const n = Math.sin(x * 0.18) * Math.cos(y * 0.22) + Math.sin((x + y) * 0.11) * 0.5;
-      row.push(n);
-    }
-    terrainNoise.push(row);
-  }
-
-  function addLog(msg, cls = "") {
-    const logEl = document.getElementById("terminalLog");
-    const now = new Date().toISOString().split("T")[1].slice(0, 8);
-    const line = document.createElement("div");
-    if (cls) line.className = cls;
-    line.textContent = `[${now}] ${msg}`;
-    logEl.appendChild(line);
-    logEl.scrollTop = logEl.scrollHeight;
-  }
-
-  function setBand(band) {
-    currentBand = band;
-    document.getElementById("btnLBand").classList.toggle("active", band.startsWith("L-Band"));
-    document.getElementById("btnSBand").classList.toggle("active", band.startsWith("S-Band"));
-    addLog(`RADAR_PHY: Switched transceiver to ${band}`, "log-ok");
-    updateMetrics();
-  }
-
-  function setViewMode(mode) {
-    viewMode = mode;
-    document.getElementById("btnViewSplit").classList.toggle("active", mode === "split");
-    document.getElementById("btnViewIfg").classList.toggle("active", mode === "interferogram");
-    addLog(`ATMOS_INV: Render pipeline set to [${mode.toUpperCase()}]`);
-  }
-
-  function updateMetrics() {
-    const data = AOI_DATA[currentAOI];
-    const factor = stressVal / 68;
-    const bandMult = currentBand.startsWith("L-Band") ? 1.0 : 1.18;
-
-    const t0S = data.baseSigma;
-    const deltaS = -(4.2 * factor * bandMult);
-    const t1S = (t0S + deltaS).toFixed(1);
-    const disp = (data.baseDisp * factor).toFixed(1);
-    const coh = Math.max(0.12, (0.94 - 0.52 * factor)).toFixed(2);
-    const area = (data.baseArea * factor).toFixed(1);
-
-    document.getElementById("metaSource").textContent = data.source;
-    document.getElementById("metaCoords").textContent = data.coords;
-    document.getElementById("metaPol").textContent = data.pol;
-
-    document.getElementById("t0Sigma").textContent = `${t0S.toFixed(1)} dB`;
-    document.getElementById("t1Sigma").textContent = `${t1S} dB`;
-    document.getElementById("deltaSigma").textContent = `${deltaS.toFixed(1)} dB`;
-    document.getElementById("t1Disp").textContent = `-${disp} cm`;
-    document.getElementById("t1Coh").textContent = coh;
-    document.getElementById("t1Area").textContent = `${area} km²`;
-
-    const banner = document.getElementById("statusBanner");
-    if (stressVal >= 75) {
-      banner.className = "status-banner status-critical";
-      banner.textContent = `CRITICAL ANOMALY: ${disp} cm SHIFT // BLOCK-B BACKUP LOCKED`;
-    } else if (stressVal >= 40) {
-      banner.className = "status-banner status-warning";
-      banner.textContent = `WARNING: ELEVATED BACKSCATTER DRIFT (${deltaS.toFixed(1)} dB)`;
-    } else {
-      banner.className = "status-banner status-nominal";
-      banner.textContent = `NOMINAL: SURFACE COHERENCE STABLE (γ = ${coh})`;
-    }
-  }
-
-  function renderFrame() {
-    animPhase += 0.04;
-    const data = AOI_DATA[currentAOI];
-    const cellW = canvas.width / GRID_W;
-    const cellH = canvas.height / GRID_H;
-    const wipeX = (wipePos / 100) * canvas.width;
-    const severity = stressVal / 100;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (let y = 0; y < GRID_H; y++) {
-      for (let x = 0; x < GRID_W; x++) {
-        const px = x * cellW;
-        const py = y * cellH;
-        const n = terrainNoise[y][x];
-
-        // Distance from epicenter of surface change
-        const dx = (x - GRID_W * 0.52) / (GRID_W * 0.35);
-        const dy = (y - GRID_H * 0.5) / (GRID_H * 0.38);
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const anomalyMask = Math.max(0, 1 - dist) * severity;
-
-        // Radar speckle simulation
-        const speckle = (Math.sin(x * 12.9898 + y * 78.233 + animPhase) * 43758.5453) % 1;
-        const grain = Math.abs(speckle) * 24;
-
-        let r, g, b;
-
-        if (viewMode === "interferogram") {
-          // DInSAR Phase Fringes (Rainbow wrap around deformation bowl)
-          const phase = (anomalyMask * 14.0 + n * 1.4 - animPhase * 0.5) % (Math.PI * 2);
-          r = Math.floor(127 + 127 * Math.sin(phase) + grain * 0.5);
-          g = Math.floor(127 + 127 * Math.sin(phase + 2.09) + grain * 0.5);
-          b = Math.floor(127 + 127 * Math.sin(phase + 4.18) + grain * 0.5);
-        } else {
-          // Split Before (T0) vs After (T1) Backscatter Composite
-          const isAfter = px >= wipeX;
-          if (!isAfter) {
-            // T0 Healthy Baseline
-            r = Math.floor(data.colorShift[0] * (0.45 + 0.3 * n) + grain);
-            g = Math.floor(data.colorShift[1] * (0.45 + 0.3 * n) + grain);
-            b = Math.floor(data.colorShift[2] * (0.45 + 0.3 * n) + grain);
-          } else {
-            // T1 Post-Event Backscatter Anomaly
-            const baseR = data.colorShift[0] * (0.4 + 0.25 * n);
-            const baseG = data.colorShift[1] * (0.4 + 0.25 * n);
-            const baseB = data.colorShift[2] * (0.4 + 0.25 * n);
-
-            r = Math.floor(baseR * (1 - anomalyMask) + data.anomalyColor[0] * anomalyMask + grain);
-            g = Math.floor(baseG * (1 - anomalyMask) + data.anomalyColor[1] * anomalyMask + grain);
-            b = Math.floor(baseB * (1 - anomalyMask) + data.anomalyColor[2] * anomalyMask + grain);
-          }
-        }
-
-        ctx.fillStyle = `rgb(${Math.min(255, Math.max(0, r))},${Math.min(255, Math.max(0, g))},${Math.min(255, Math.max(0, b))})`;
-        ctx.fillRect(px, py, cellW + 0.6, cellH + 0.6);
-      }
-    }
-
-    // Draw Wipe Divider Line in Split Mode
-    if (viewMode === "split") {
-      ctx.strokeStyle = "#00f0ff";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(wipeX, 0);
-      ctx.lineTo(wipeX, canvas.height);
-      ctx.stroke();
-    }
-
-    // Draw Target Reticle
-    const cx = canvas.width * 0.52;
-    const cy = canvas.height * 0.5;
-    ctx.strokeStyle = "rgba(255, 176, 32, 0.85)";
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(cx - 28, cy - 28, 56, 56);
-
-    requestAnimationFrame(renderFrame);
-  }
-
-  document.getElementById("siteSelect").addEventListener("change", (e) => {
-    currentAOI = e.target.value;
-    const data = AOI_DATA[currentAOI];
-    addLog(`AOI_LOAD: ${data.name}`, "log-ok");
-    addLog(`INSIGHT: ${data.description}`);
-    updateMetrics();
-  });
-
-  document.getElementById("wipeSlider").addEventListener("input", (e) => {
-    wipePos = parseInt(e.target.value, 10);
-    document.getElementById("epochLabel").textContent = `WIPE: ${wipePos}% | ΔT = 18 MONTHS`;
-  });
-
-  document.getElementById("stressSlider").addEventListener("input", (e) => {
-    stressVal = parseInt(e.target.value, 10);
-    document.getElementById("stressLabel").textContent = `SEVERITY: ${stressVal}%`;
-    updateMetrics();
-  });
-
-  function exportReport() {
-    const data = AOI_DATA[currentAOI];
-    const payload = {
-      system: "NISAR-PULSE // Valrix-Atmos SAR Telemetry Engine",
-      challenge: "Dancing with the SARs (2026 NASA Space Apps)",
-      aoi: data.name,
-      dataset_id: data.source,
-      coordinates: data.coords,
-      radar_band: currentBand,
-      severity_index_pct: stressVal,
-      valrix_integrity_hash: "SHA256-9F84C2E1B07A-VERIFIED",
-      timestamp_utc: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `nisar_pulse_${currentAOI}_report.json`;
-    a.click();
-    addLog(`VALRIX_VAULT: Exported verified telemetry JSON for ${currentAOI}`, "log-ok");
-  }
-
-  // Boot Sequence (Valrix + Atmos God Initialization)
-  addLog("VALRIX_CORE: Initializing Dual-Block State Matrix...", "log-ok");
-  addLog("ATMOS_INV: Non-Visual Wave Inversion Kernel Online (0ms Lag).", "log-ok");
-  addLog("NASA_DATA: Loaded NISAR L1/L2 & Sentinel-1 Reference Tiles.", "log-warn");
-  updateMetrics();
-  renderFrame();
-</script>
+  <script defer src="./assets/nisar-scene.js"></script>
+  <script defer src="./assets/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "h5wasm": "0.10.3",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "scripts": {
+    "build": "npm run build:viewer && npm run build:app && npm run build:hdf5 && npm run stage:site",
+    "build:viewer": "esbuild src/nisar-scene.js --bundle --format=iife --global-name=NisarThree --minify --outfile=assets/nisar-scene.js",
+    "build:app": "esbuild src/app.js --bundle --format=iife --minify --outfile=assets/app.js",
+    "build:hdf5": "esbuild src/hdf5-reader-worker.js --bundle --format=iife --target=es2022 --minify --outfile=assets/hdf5-reader-worker.js",
+    "stage:site": "node scripts/stage-site.mjs",
+    "test": "npm run build && node --test tests/test_browser_demo.js tests/test_hdf5_reader.mjs tests/test_hdf5_preview.mjs",
+    "test:hdf5": "node tests/test_hdf5_reader.mjs"
+  }
+}
